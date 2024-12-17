@@ -125,16 +125,17 @@ async function run(): Promise<void> {
 
     // Attempt to merge the upstream tag
     try {
-        await execCommand('git', ['merge', latestTag]);
+        // Add --allow-unrelated-histories flag
+        await execCommand('git', ['merge', latestTag, '--allow-unrelated-histories']);
         mergeMessage = 'Successfully merged upstream tag';
         info(mergeMessage);
     } catch (error) {
         hasConflicts = true;
         mergeMessage = 'Merge conflicts detected. Manual resolution required.';
         warning(mergeMessage);
-
-        // Instead of hard reset, we'll push the conflicting state
-        // This allows reviewers to resolve conflicts manually
+    
+        // Add some basic content to commit
+        await execCommand('git', ['commit', '--allow-empty', '--no-verify', '-m', 'Initial commit for sync']);
         await execCommand('git', ['add', '.']);
         await execCommand('git', ['commit', '--no-verify', '-m', 'WIP: Sync with upstream (conflicts to resolve)']);
     }
